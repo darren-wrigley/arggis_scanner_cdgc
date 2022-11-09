@@ -1,0 +1,175 @@
+{
+  "packageName": "arcgis.rest.custom",
+  "packageLabel": "ArcGIS - Custom",
+  "packageDescription": "ArcGIS model for rest objects",
+  "deprecated": false,
+  "requiredPackages": [
+    "core"
+  ],
+  "version": 1,
+  "modifiedBy": "",
+  "classes": [
+    {
+      "name": "Server",
+      "label": "Server",
+      "externalLabel": "",
+      "description": "the server that contains the service definitions",
+      "isFirstClass": true,
+      "isAbstract": false,
+      "superClasses": [
+        "core.IClassTechnical"
+      ],
+      "deprecated": false,
+      "indexable": true,
+      "appendOnly": false,
+      "extensions": []
+    },
+    {
+      "name": "Service",
+      "label": "Service",
+      "externalLabel": "",
+      "description": "A service within ArcGIS.  will contain layers/fields",
+      "isFirstClass": true,
+      "isAbstract": false,
+      "superClasses": [
+        "core.IClassTechnical"
+      ],
+      "deprecated": false,
+      "indexable": true,
+      "appendOnly": false,
+      "extensions": []
+    },
+    {
+      "name": "Layer",
+      "label": "Layer",
+      "externalLabel": "Layer",
+      "description": "Layer desc here...",
+      "isFirstClass": true,
+      "isAbstract": false,
+      "superClasses": [
+        "core.DataSet"
+      ],
+      "deprecated": false,
+      "indexable": true,
+      "appendOnly": false,
+      "extensions": []
+    },
+    {
+      "name": "Field",
+      "label": "Field",
+      "externalLabel": "Field",
+      "description": "Field desc here...",
+      "isFirstClass": true,
+      "isAbstract": false,
+      "superClasses": [
+        "core.DataElement"
+      ],
+      "deprecated": false,
+      "indexable": true,
+      "appendOnly": false,
+      "extensions": []
+    }  
+	],
+  "attributes": [
+    {
+      "name": "Type",
+      "label": "Type",
+      "dataType": "core.String",
+      "description": "Datatype for Field or Type of Service",
+      "multivalued": false,
+      "deprecated": false,
+      "derived": false,
+      "data": false,
+      "isCustom": false,
+      "defaultValues": [],
+      "isSystem": false,
+      "embedded": false,
+      "searchConfiguration": {
+        "suggestable": false,
+        "aggregatable": false,
+        "sortable": false,
+        "attributeType": "SEARCHABLE"
+      }
+    }
+  ],
+  "associations": [
+    {
+      "name": "ServerContainsService",
+      "label": "ServerContainsService",
+      "description": "Server provides many services",
+      "fromClass": "arcgis.rest.custom.Server",
+      "toLabel": "Server",
+      "fromLabel": "Service",
+      "toClass": "arcgis.rest.custom.Service",
+      "associationKinds": [
+        "core.ParentChild"
+      ],
+      "deprecated": false,
+      "unidirectional": false,
+      "aggregate": false
+    },
+    {
+      "name": "ServiceContainsLayer",
+      "label": "ServiceContainsLayer",
+      "description": "layers are contained within a service",
+      "fromClass": "arcgis.rest.custom.Service",
+      "toLabel": "Service",
+      "fromLabel": "Layer",
+      "toClass": "arcgis.rest.custom.Layer",
+      "associationKinds": [
+        "core.ParentChild"
+      ],
+      "deprecated": false,
+      "unidirectional": false,
+      "aggregate": false
+    },
+    {
+      "name": "LayerContainsField",
+      "label": "LayerContainsField",
+      "description": "layter contains 1 or more fields",
+      "fromClass": "arcgis.rest.custom.Layer",
+      "toLabel": "Service",
+      "fromLabel": "Layer",
+      "toClass": "arcgis.rest.custom.Field",
+      "associationKinds": [
+        "core.ParentChild"
+      ],
+      "deprecated": false,
+      "unidirectional": false,
+      "aggregate": false
+    }  
+	],
+  "classAttributes": [
+      {
+      "className": "arcgis.rest.custom.Field",
+      "name": "Type",
+      "attributeName": "arcgis.rest.custom.Type",
+      "isRequired": false,
+      "isCuratable": false,
+      "deprecated": false,
+      "reference": "",
+      "isHidden": false,
+      "cdc": false,
+      "extension": "",
+      "followers": []
+	  },
+      {
+      "className": "arcgis.rest.custom.Service",
+      "name": "Type",
+      "attributeName": "arcgis.rest.custom.Type",
+      "isRequired": false,
+      "isCuratable": false,
+      "deprecated": false,
+      "reference": "",
+      "isHidden": false,
+      "cdc": false,
+      "extension": "",
+      "followers": []
+	  }
+	],
+  "associationAttributes": [],
+  "associationKinds": [],
+  "referenceAttributes": [],
+  "dataTypes": [],
+  "referenceDataTypes": []
+}
