@@ -28,10 +28,14 @@ pip install requests
 you may want to setup/use a virtual environment to isolate package dependencies
 
 linux/macos
-python3 arcgis/crawler.py --url https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services
+```
+python3 arcgis/arcgis_scanner.py --url https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services
+```
 
 windows
-py arcgis/crawler.py --url https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services
+```
+py arcgis/arcgis_scanner.py --url https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services
+```
 
 starting the process with -h, will print the command-line help
 
