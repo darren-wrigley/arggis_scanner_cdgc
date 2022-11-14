@@ -1,6 +1,9 @@
 .venv*
 model/*template/*
 out/*
+.DS_Store
+scan*.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

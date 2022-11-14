@@ -8,7 +8,7 @@ dwrigley
 import requests
 import json
 from datetime import datetime
-from datetime import timedelta
+import argparse
 
 from cdgc_writer import CDGCWriter
 
@@ -22,17 +22,19 @@ class ArgGISCrawler:
 
     hawk = CDGCWriter("./out")
 
-    max_services_to_scan = 3
+    version = "0.1"
 
-    def __init__(self):
-        print("arcgis init here...")
+    max_services_to_scan = 0
+
+    def __init__(self, limit: int):
+        print(f"Initializing ArcGIS scanner arcgis v{self.version}")
 
         # max_layers = 0
+        self.max_services_to_scan = limit
+        # self.out_folder = out_folder
 
     def read_server(self, url: str):
         print(f"read arcgis server url={url}")
-
-        server_name = url.split("/")[3]
 
         parms = {"f": "pjson"}
         r = requests.get(url, params=parms)
@@ -43,18 +45,32 @@ class ArgGISCrawler:
 
         # assume success
         server_resp = r.text
-        server_obj = json.loads(server_resp)
+        try:
+            server_obj = json.loads(server_resp)
+        except json.decoder.JSONDecodeError:
+            print("error processing json result returned from url, exiting")
+            return
 
         print(f"server version: {server_obj.get('currentVersion')}")
         print(f"      services: {len(server_obj.get('services'))}")
 
-        self.hawk.write_server(server_name, url)
+        try:
+            self.server_name = url.split("/")[3]
+        except:
+            print(
+                "Cannot extract server name from 3rd part if url seperated by /, exiting"
+            )
+            return
+
+        self.hawk.write_server(self.server_name, url)
+
+        self.svcs_to_scan = len(server_obj.get("services"))
 
         # count = 0
         for service_obj in server_obj["services"]:
             self.total_services += 1
             self.read_service(service_obj)
-            if self.total_services > self.max_services_to_scan:
+            if self.total_services >= self.max_services_to_scan:
                 print(
                     f"max services to scan level hit: {self.max_services_to_scan} ending.."
                 )
@@ -63,9 +79,9 @@ class ArgGISCrawler:
         print("returning from server read")
         print(f"max layers: {self.max_layers}")
         print(f"max fields: {self.max_fields}")
-        print(f"total services: {self.total_services}")
-        print(f"total layers: {self.total_layers}")
-        print(f"total fields: {self.total_fields}")
+        print(f"total services: {self.svcs_to_scan} exported={self.hawk.service_count}")
+        print(f"total layers: {self.total_layers} exported={self.hawk.layer_count}")
+        print(f"total fields: {self.total_fields} exported={self.hawk.field_count}")
 
         self.hawk.finalize_scan()
 
@@ -73,7 +89,8 @@ class ArgGISCrawler:
         # print(f"\tprocessing service: {service_ref['name']}")
 
         if service_ref["type"] != "FeatureServer":
-            print(f"\tnot processing service: type={service_ref['type']}")
+            print(f"\tWARNING: not processing service: type={service_ref['type']}")
+            return
 
         service_name = service_ref["name"]
         # read the service json
@@ -86,20 +103,25 @@ class ArgGISCrawler:
 
         service_text = r.text
         service_obj = json.loads(service_text)
+
+        self.hawk.write_service(self.server_name, service_ref, service_obj)
+
         layer_count = len(service_obj["layers"])
         if layer_count > self.max_layers:
             self.max_layers = layer_count
-        print(f"\tservice: {service_name} layers={len(service_obj['layers'])}")
+        print(
+            f"\tservice {self.total_services}/{self.svcs_to_scan}: {service_name} layers={len(service_obj['layers'])}"
+        )
 
         for layer in service_obj["layers"]:
-            self.read_layer(layer, service_url)
+            self.read_layer(layer, service_url, self.server_name + "/" + service_name)
 
-    def read_layer(self, layer_ref: dict, service_url: str):
+    def read_layer(self, layer_ref: dict, service_url: str, parent_id: str):
         print(f"\t\treading layer: {layer_ref['id']} -- {layer_ref['name']}")
         self.total_layers += 1
 
         layer_url = service_url + "/" + str(layer_ref["id"])
-        print(f"reading layer_url: {layer_url}")
+        # print(f"\t\t\tlayer_url: {layer_url}")
         r = requests.get(layer_url, params={"f": "pjson"})
         # print(r)
         # note 400 here does not go to status code??
@@ -109,8 +131,15 @@ class ArgGISCrawler:
 
         layer_text = r.text
         layer_obj = json.loads(layer_text)
+
+        self.hawk.write_layer(parent_id, layer_obj, layer_url)
+
         if "fields" in layer_obj:
             field_count = len(layer_obj["fields"])
+            for pos, field in enumerate(layer_obj["fields"]):
+                self.hawk.write_field(
+                    parent_id + "/" + str(layer_obj["id"]), field, pos + 1
+                )
         else:
             field_count = 0
             print("ERROR: layer has no fields???")
@@ -121,28 +150,56 @@ class ArgGISCrawler:
                 if "fields" in sublayer:
                     field_count = len(sublayer["fields"])
                     print(f"\t\t\tnested layer fields : {field_count}")
+                    for pos, field in enumerate(sublayer["fields"]):
+                        self.hawk.write_field(
+                            parent_id + "/" + str(layer_obj["id"]), field, pos + 1
+                        )
 
         self.total_fields += field_count
 
         if field_count > self.max_fields:
             self.max_fields = field_count
 
-        print(f"\t\tlayer data: fields={field_count}")
+        print(f"\t\t\tfield count={field_count}")
 
     # end of class def
 
 
 def main():
-    print("in main")
-    tstart = datetime.now()
-    arggis = ArgGISCrawler()
-    arggis.read_server(
-        "https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services"
+    # command-line
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--url",
+        help="ArcGIS url to scan - e.g. https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services",
     )
+    parser.add_argument(
+        "-l",
+        "--limit",
+        type=int,
+        default=99999,
+        help="limit the number of services to scan",
+    )
+    args = parser.parse_args()
+
+    if args.url == None:
+        print("url not specified")
+        print(parser.print_help())
+        return
+
+    if args.limit <= 0:
+        print("limit cannot be 0 or less")
+        print(parser.print_help())
+        return
+
+    tstart = datetime.now()
+    # initialize the scanner object
+    arcgis = ArgGISCrawler(args.limit)
+    # arcgis.read_server(
+    #     "https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services"
+    # )
+    arcgis.read_server(args.url)
 
     tend = datetime.now()
-    # print(f"diff:: {tend-tstart}")
-
     print(f"process completed in {(tend - tstart)} ")
 
 

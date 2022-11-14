@@ -11,6 +11,20 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "arcgis scan",
+            "type": "python",
+            "request": "launch",
+            "program": "arcgis/arcgis_scanner.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--url",
+                "https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services",
+                "--limit",
+                "2"
+            ],
         }
     ]
 }
