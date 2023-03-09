@@ -19,6 +19,7 @@ class ArgGISCrawler:
     total_layers = 0
     total_fields = 0
     total_services = 0
+    service_url = ""
 
     hawk = CDGCWriter("./out")
 
@@ -34,6 +35,7 @@ class ArgGISCrawler:
         # self.out_folder = out_folder
 
     def read_server(self, url: str):
+        self.service_url = url
         print(f"read arcgis server url={url}")
 
         parms = {"f": "pjson"}
@@ -93,8 +95,18 @@ class ArgGISCrawler:
             return
 
         service_name = service_ref["name"]
+        service_type = service_ref["type"]
         # read the service json
-        service_url = service_ref["url"]
+        if "url" in service_ref:
+            service_url = service_ref["url"]
+        else:
+            # need to calculate the service url
+            service_url = f"{self.service_url}/{service_name}/{service_type}"
+            print("service url calculated from service_name and service type")
+            print(service_url)
+            # add url to the original dict
+            service_ref["url"] = service_url
+
         r = requests.get(service_url, params={"f": "pjson"})
         # print(r)
         if r.status_code != 200:
