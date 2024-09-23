@@ -1,10 +1,21 @@
 # arggis_scanner_cdgc
 protoytype scanner for ArcGIS REST Services Directory
 
+Features:-
+- connect to ArcGIS site via URL e.g. https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services
+ and extract metadata about 
+  - Services (FeatureServer)
+  - Layers - Services can have multiple layers
+  - Fields - Layers have fields, position and type are extracted
+- URL for the Services/Layers are stored in Description
+  - URL for Services Directory link
+  - URL for Map Link
+  - URL for Query Link  - only for Services, not valid for Layers
+
 
 ## implemention notes
 
-- is server necessary, the cdgc catalog source could act as the server
+- is server necessary? the cdgc catalog source could act as the server
 - some Services have duplicate layer names
     - see https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services/PotentialInundation_Temp/FeatureServer
     - these layters are mostly the same, with some small differences (all else is identical)
@@ -15,8 +26,6 @@ protoytype scanner for ArcGIS REST Services Directory
 
 - some fields have aliases- since fields do not have a description, will store it there for now
   - example in Air_Quality_Index_Layers_WFL1
-
-- urls - need to figure out how to store them as clickable in the description
 
 
 ## How to run
@@ -70,3 +79,10 @@ options:
   - --out_folder folder to write files (default is ./out)
 
 - remove dependency on requests module (need to pip install requests currently to run)
+
+
+## Updates
+
+- 2024-09-23 bugfixes
+  - if the layer data cannot be extrcted (returns Token Required), the error was not handled and the scanner exited
+  - if the layer data was not returned, due to timeout, the cdgc writer failed and the scanner exited.  set timeout to 10sec & handled the error if timeout occurs

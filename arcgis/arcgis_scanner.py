@@ -58,9 +58,11 @@ class ArgGISCrawler:
 
         try:
             self.server_name = url.split("/")[3]
-        except:
+        except Exception as e:
             print(
-                "Cannot extract server name from 3rd part if url seperated by /, exiting"
+                f"Error:{e.__class__.__name__} - {e} - "
+                "Cannot extract server name from 3rd part if url seperated by /, "
+                "exiting"
             )
             return
 
@@ -118,6 +120,13 @@ class ArgGISCrawler:
 
         self.hawk.write_service(self.server_name, service_ref, service_obj)
 
+        # note - some services/features appear to need a token
+        # see https://services1.arcgis.com/zdB7qR0BtYrg0Xpl/ArcGIS/rest/services/Encampments_ChildrenPresent/FeatureServer
+        # and might return Token Required, and there will be no layers
+        if "layers" not in service_obj:
+            print(f"layers not found in service: {self.server_name} ref={service_ref}")
+            return
+
         layer_count = len(service_obj["layers"])
         if layer_count > self.max_layers:
             self.max_layers = layer_count
@@ -134,9 +143,10 @@ class ArgGISCrawler:
 
         layer_url = service_url + "/" + str(layer_ref["id"])
         # print(f"\t\t\tlayer_url: {layer_url}")
-        r = requests.get(layer_url, params={"f": "pjson"})
+        r = requests.get(layer_url, params={"f": "pjson"}, timeout=10)
         # print(r)
         # note 400 here does not go to status code??
+        # print(f"executed: {layer_url} rc={r.status_code}")
         if r.status_code != 200:
             print(f"error: {r}")
             return
@@ -193,7 +203,7 @@ def main():
     )
     args = parser.parse_args()
 
-    if args.url == None:
+    if args.url is None:
         print("url not specified")
         print(parser.print_help())
         return

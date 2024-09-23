@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -14,7 +14,7 @@
         },
         {
             "name": "arcgis scan",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "arcgis/arcgis_scanner.py",
             "console": "integratedTerminal",
@@ -25,6 +25,43 @@
                 "--limit",
                 "2"
             ],
+        },
+        {
+            "name": "arcgis scan 2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "arcgis/arcgis_scanner.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--url",
+                "https://gis.dot.nv.gov/rhgis/rest/services",
+                "--limit",
+                "200"
+            ],
+        },
+        {
+            "name": "arcgis scan 3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "arcgis/arcgis_scanner.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--url",
+                "https://caltrans-gis.dot.ca.gov/arcgis/rest/services",
+                "--limit",
+                "200"
+            ],
+        },
+        {
+            "name": "arcgis scan 3 - no url",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "arcgis/arcgis_scanner.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [],
         }
     ]
 }

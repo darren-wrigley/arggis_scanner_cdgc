@@ -146,7 +146,7 @@ class CDGCWriter:
         )
         zipf.write(
             f"{self.output_folder}/links.csv",
-            f"links.csv",
+            "links.csv",
         )
         zipf.write(
             f"{self.output_folder}/{self.SERVER_CLASS}.csv",
@@ -217,7 +217,9 @@ class CDGCWriter:
         self.layer_count += 1
 
         if "id" not in layer_data:
-            print(f"no id?? {layer_data}")
+            print(f"no id?? layer cannot be written:  {layer_data}")
+            # need to exit here
+            return
         objectid = f"{parent_id}/{layer_data['id']}"
 
         # format url links to ArcGis
